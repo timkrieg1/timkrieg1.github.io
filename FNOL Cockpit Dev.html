@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FNOL Cockpit Dev</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" crossorigin="anonymous" />
+    <style>
+body {
+    font-family: "Roboto", sans-serif;
+    text-align: center;
+    background: linear-gradient(135deg, #000, #003781);
+    color: #fff;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+.container {
+    max-width: 600px;
+    width: 100%;
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.3);
+    color: #003D5B;
+}
+
+#logo {
+    width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto 40px;
+}
+
+.logo-image {
+    width: 150px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+form {
+    margin-top: 10px;
+    text-align: left;
+}
+
+.input-container label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.input-container input,
+.input-container select {
+    box-sizing: border-box;
+	width: 100%;
+    padding: 10px;
+    border: 2px solid #0077B6;
+    margin-bottom: 20px;
+    color: #003D5B;
+    border-radius: 5px;
+}
+
+button {
+    background-color: #0077B6;
+    color: #fff;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    width: 100%;
+    margin-bottom: 15px;
+    border-radius: 5px;
+}
+
+button:hover {
+    background-color: #00537E;
+}
+
+.intro-text {
+    text-align: left;
+    margin-top: 0;
+    margin-bottom: 30px;
+    color: #003781;
+}
+
+.input-container .quick-select-button {
+    display: inline-block;
+    width: 50px;
+    height: 30px;
+    margin-right: 3px;
+	margin-top: -15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+	background: none;
+    cursor: pointer;
+    text-align: center;
+    line-height: 10px; 
+    vertical-align: middle; 
+    color: #003D5B;
+	margin-right: 5px; 
+	display: flex; 
+	align-items: center; 
+	justify-content: center;
+}
+
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="logo">
+			<img src="C:\Users\tkrieg\OneDrive - Deloitte (O365D)\AzDE\Sharepoint2Cognigy\Allianz_Logo.png" class="logo-image">
+		</div>
+        <div class="intro-text">
+            <p>Welcome to the FNOL Cockpit Dev. Please fill out the form below:</p>
+        </div>
+        <form id="myForm">
+            <div class="input-container">
+                <label for="textValue">Module Routing Percentage:</label>
+                <input type="text" name="textValue" id="textValue" placeholder="Enter a percentage value" oninput="addPercentSign(this)">
+					<div style="display: flex; flex-direction: row;">
+						<button class="quick-select-button" id="quickReply" type="button" onclick="setPercentage(100)">100%</button>
+						<button class="quick-select-button" id="quickReply" type="button" onclick="setPercentage(50)">50%</button>
+					</div>            
+			</div>
+            <div class="input-container">
+                <label for="dropdownOption">Endpoint Status:</label>
+                <select name="dropdownOption" id="dropdownOption">
+                     <option value="Enabled">🟢 Enabled</option>
+                     <option value="Disabled">🔴 Disabled</option>
+                </select>
+            </div>
+		    <button type="button" id="loadButton">
+				<i class="fas fa-spinner"></i> Load
+			</button>
+			<button type="submit">
+			  <i class="fas fa-check"></i> Submit
+			</button>
+        </form>
+    </div>
+</body>
+</html>
+	<script>
+
+		// Function to handle form submission
+        async function handleSubmit(event) {
+            event.preventDefault(); // Prevent the form from submitting normally
+
+            // Get user inputs
+            const apiKey = "5a80179179db7fd85cafe504ee0ba851fa598c27fca3fc273930c41afb631d71f743a34aef8799b417abff94fced8f864a90e150c333d27d4168a9f550aa1872";
+            moduleRoutingPercentage = document.getElementById("textValue").value;
+			moduleRoutingPercentage = moduleRoutingPercentage.replace("%","")
+			moduleRoutingPercentage = moduleRoutingPercentage/100
+			moduleRoutingPercentage = moduleRoutingPercentage.toString()
+			moduleIsActivated = document.getElementById("dropdownOption").value;
+			if(moduleIsActivated == "Enabled") {
+				moduleIsActivatedTrueFalse = "true";
+			} else if(moduleIsActivated == "Disabled") {
+				moduleIsActivatedTrueFalse = "false";
+			} else {
+				throw new Error("The value of moduleIsActivatedTrueFalse is neither true nor false");
+			}
+            const lexiconId = "657342caf19623f69091931d";
+			var keyphraseIdsDic = {};
+			var moduleRoutingPercentageEntryId = "657346ff1c92ffc6aec75a8f";
+			var moduleIsActivatedEntryId = "657342d49027b0071cee5950";
+			var iterationNumber = 1;
+			
+			console.log("Submit: moduleIsActivated",moduleIsActivatedTrueFalse);
+			console.log("Submit: moduleRoutingPercentage",moduleRoutingPercentage);
+            
+            // Get keyphrase IDs from the API endpoint
+            const response = await fetch("https://api-trial.cognigy.ai/new/v2.0/lexicons/" + lexiconId + "/entries?api_key=" + apiKey, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
+			const data = await response.json();
+
+			moduleRoutingPercentageAPICall = data._embedded.lexiconentries[0].keyphrases[1].value;
+			if (moduleRoutingPercentageAPICall !== "moduleRoutingPercentage") {
+				keyphraseIdsDic[moduleRoutingPercentageEntryId] = data._embedded.lexiconentries[0].keyphrases[1]._id;
+					} 
+				else {keyphraseIdsDic[moduleRoutingPercentageEntryId] = data._embedded.lexiconentries[0].keyphrases[0]._id
+					};
+			moduleIsActivatedTrueFalseAPICall = data._embedded.lexiconentries[1].keyphrases[1].value;
+			if (moduleIsActivatedTrueFalseAPICall !== "moduleActive") {
+				keyphraseIdsDic[moduleIsActivatedEntryId] = data._embedded.lexiconentries[1].keyphrases[1]._id;
+					} 
+				else {keyphraseIdsDic[moduleIsActivatedEntryId] = data._embedded.lexiconentries[1].keyphrases[0]._id
+					};
+			console.log("Dictionary:", keyphraseIdsDic);
+			
+				
+				
+			// Delete current Lexicon entries the API endpoint
+            for (entryId in keyphraseIdsDic){
+			await fetch("https://api-trial.cognigy.ai/new/v2.0/lexicons/" + lexiconId + "/entries/" + entryId + "/keyphrases/" + keyphraseIdsDic[entryId] + "?api_key=" + apiKey, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+			.then(response => {
+                console.log("Response code: " + response.status);
+                console.log("Response status: " + response.statusText);
+
+                if (!(response.ok && response.status === 204)) {
+                    alert("Update failed! Status Code: " + response.status);
+                }
+				// Reassing Dictionary values with current values
+				if(iterationNumber == 1) {
+					keyphraseIdsDic[entryId] = moduleRoutingPercentage
+					}
+				else {
+					keyphraseIdsDic[entryId] = moduleIsActivatedTrueFalse
+					};
+				iterationNumber = iterationNumber + 1
+            });
+			}
+			console.log(keyphraseIdsDic)
+			
+			// Post new Lexicon entries with values
+			operationsSuccesfullArray = []
+			for (entryId in keyphraseIdsDic){
+			payload = {
+				"value" : keyphraseIdsDic[entryId]
+				}
+			console.log(typeof payload);
+			console.log(JSON.stringify(payload));
+			await fetch("https://api-trial.cognigy.ai/new/v2.0/lexicons/" + lexiconId + "/entries/" + entryId + "/keyphrases/" + "?api_key=" + apiKey, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+				body: JSON.stringify(payload)
+            })
+			.then(response => {
+                console.log("Response code: " + response.status);
+                console.log("Response status: " + response.statusText);
+
+                if (!(response.ok && response.status === 201)) {
+                    alert("Update failed! Status Code: " + response.status);
+                } 
+				else {
+					operationsSuccesfullArray.push("True");
+				}
+            })
+			};
+			if(operationsSuccesfullArray.length === 2) {
+				alert("Success! The changes have been made!")
+				} 
+			else {
+				alert("Something went wrong")
+				}
+			};
+
+
+        
+		
+        // Attach the handleSubmit function to the form's submit event
+        const form = document.querySelector("form");
+        form.addEventListener("submit", handleSubmit);
+
+		// Function to load data into the form fields
+		function loadData() {
+			const apiKey = "5a80179179db7fd85cafe504ee0ba851fa598c27fca3fc273930c41afb631d71f743a34aef8799b417abff94fced8f864a90e150c333d27d4168a9f550aa1872";
+			const lexiconId = "657342caf19623f69091931d";
+
+			// Send data to the API endpoint
+			fetch("https://api-trial.cognigy.ai/new/v2.0/lexicons/" + lexiconId + "/entries?api_key=" + apiKey, {
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			})
+			.then(response => {
+				console.log("Response code: " + response.status);
+				console.log("Response status: " + response.statusText);
+
+				if (!(response.ok && response.status === 200)) {
+					alert("Update failed! Status Code: " + response.status);
+				} else {
+					return response.json();
+				}
+			})
+			.then((data) => {
+				console.log(data);
+				moduleRoutingPercentage = data._embedded.lexiconentries[0].keyphrases[1].value;
+
+				if (moduleRoutingPercentage !== "moduleRoutingPercentage") {
+					moduleRoutingPercentage = moduleRoutingPercentage;
+				} else {
+					moduleRoutingPercentage = data._embedded.lexiconentries[0].keyphrases[0].value;
+				}
+
+				// Convert moduleRoutingPercentage to a number and add percent sign
+				moduleRoutingPercentage = Math.floor(moduleRoutingPercentage * 100);
+				moduleRoutingPercentage = moduleRoutingPercentage.toString() + "%"
+				document.getElementById("textValue").value = moduleRoutingPercentage;
+
+				moduleIsActivatedTrueFalse = data._embedded.lexiconentries[1].keyphrases[1].value;
+
+				if (moduleIsActivatedTrueFalse !== "moduleActive") {
+					moduleIsActivatedTrueFalse = moduleIsActivatedTrueFalse;
+				} else {
+					moduleIsActivatedTrueFalse = data._embedded.lexiconentries[1].keyphrases[0].value;
+				}
+
+				if (moduleIsActivatedTrueFalse == "true") {
+					moduleIsActivated = "Enabled";
+				} else if (moduleIsActivatedTrueFalse == "false") {
+					moduleIsActivated = "Disabled";
+				} else {
+					throw new Error("The value of moduleIsActivatedTrueFalse is neither true nor false");
+				}
+
+				document.getElementById("dropdownOption").value = moduleIsActivated;
+				// document.getElementById("textValue").value = moduleRoutingPercentage; // Remove this line
+			})
+			.catch(error => {
+				console.error("Error:", error);
+				alert("An error occurred while loading.");
+			});
+		}
+
+		
+		// Attach the loadData function to the "Load" button
+        const loadButton = document.getElementById("loadButton");
+        loadButton.addEventListener("click", loadData);
+		
+		function addPercentSign(input) {
+			let inputValue = input.value.trim();
+
+			// Remove existing percent signs
+			inputValue = inputValue.replace(/%/g, "");
+
+			// Save the current cursor position
+			const cursorPosition = input.selectionStart;
+
+			// Add a percent sign at the end of the value
+			inputValue += "%";
+
+			// Update the input value
+			input.value = inputValue;
+
+			// Calculate the new cursor position
+			const newPosition = cursorPosition ;
+
+			// Set the cursor position using a timeout to ensure it takes effect after the value update
+			setTimeout(() => {
+				input.setSelectionRange(newPosition, newPosition);
+			}, 0);
+		}
+		
+		function setPercentage(value) {
+			document.getElementById("textValue").value = value+"%";
+		}
+
+
+    </script>
+				</body>
+			</html>
